@@ -1,31 +1,27 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
-
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+// Single design palette (no light/dark modes), derived from docs/project_breakdown_with_epics.md
+// Peach (Accent): #F8BFA0 | Black: #1C1C1C | White: #FFFFFF | Greys: #7A7A7A (text-secondary), #E5E5E5 (dividers)
 
 export const Colors = {
-  light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
-  },
-  dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
-  },
-};
+  text: '#1C1C1C',
+  background: '#FFFFFF',
+  surface: '#FFFFFF',
+  surfaceContrast: '#1C1C1C',
+  accent: '#F8BFA0',
+  icon: '#7A7A7A',
+  border: '#E5E5E5',
+  tabIconDefault: '#7A7A7A',
+  tabIconSelected: '#F8BFA0',
+  tint: '#F8BFA0',
+} as const;
+
+export const Radius = {
+  sm: 8,
+  md: 12,
+  lg: 16,
+  pill: 999,
+} as const;
 
 export const Fonts = Platform.select({
   ios: {
