@@ -5,9 +5,18 @@ import { useItems } from '@/hooks/useItems';
 import { Link } from 'expo-router';
 import { Colors, Radius } from '@/constants/theme';
 import { SafeArea } from '@/components/safe-area';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 
 export default function HomeScreen() {
-  const { items, counts, repo, ready, marks } = useItems();
+  const { items, counts, repo, ready, marks, loading, reload } = useItems();
+
+  useFocusEffect(
+    useCallback(() => {
+      // Refresh when tab gains focus
+      reload();
+    }, [reload])
+  );
 
   if (!ready) {
     return (
@@ -29,6 +38,8 @@ export default function HomeScreen() {
       <FlatList
         data={items}
         keyExtractor={(i) => i.id}
+        refreshing={loading}
+        onRefresh={reload}
         ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
         renderItem={({ item }) => {
           const c = counts[item.id] || { shitpost: 0, spark: 0, gonna_implement: 0 };

@@ -3,14 +3,8 @@ import { Alert, StyleSheet, TextInput, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useItems } from '@/hooks/useItems';
-import { Post } from '@/constants/schema';
 import { Link, useRouter } from 'expo-router';
 import { SafeArea } from '@/components/safe-area';
-
-function uid() {
-  // Simple uid for local use (timestamp-rand)
-  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-}
 
 export default function ComposeScreen() {
   const { repo } = useItems();
@@ -20,11 +14,14 @@ export default function ComposeScreen() {
   const onSubmit = async () => {
     const content = value.trim();
     if (!content) return;
-    const p: Post = { id: uid(), content, createdAt: Date.now() };
-    await repo.upsertPost(p);
-    setValue('');
-    Alert.alert('Posted', 'Your idea was added.');
-    router.push('/(tabs)');
+    try {
+      await repo.upsertPost(content);
+      setValue('');
+      Alert.alert('Posted', 'Your idea was added.');
+      router.push('/(tabs)');
+    } catch (e: any) {
+      Alert.alert('Post failed', e?.message ?? String(e));
+    }
   };
 
   return (

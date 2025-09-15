@@ -11,16 +11,19 @@ function normalize(url) {
   return 'https://' + url;
 }
 
-const BASE_URL = normalize(process.env.EXPO_PUBLIC_TURSO_URL);
+const RAW_URL = process.env.EXPO_PUBLIC_TURSO_URL || '';
+const BASE_URL = normalize(RAW_URL);
 function endpoint(path) {
   if (!BASE_URL) return '';
   if (BASE_URL.endsWith('/v1/execute') || BASE_URL.endsWith('/v2/pipeline')) return BASE_URL;
   return BASE_URL.replace(/\/$/, '') + path;
 }
-const TURSO_TOKEN = process.env.EXPO_PUBLIC_TURSO_TOKEN;
+const TURSO_TOKEN = process.env.EXPO_PUBLIC_TURSO_TOKEN || '';
 
-if (!TURSO_URL || !TURSO_TOKEN) {
+if (!BASE_URL || !TURSO_TOKEN) {
   console.error('Missing EXPO_PUBLIC_TURSO_URL or EXPO_PUBLIC_TURSO_TOKEN env vars');
+  console.error('EXPO_PUBLIC_TURSO_URL=', RAW_URL);
+  console.error('EXPO_PUBLIC_TURSO_TOKEN set=', Boolean(TURSO_TOKEN));
   process.exit(1);
 }
 
@@ -40,6 +43,19 @@ const statements = [
     created_at TEXT NOT NULL,
     expires_at TEXT NOT NULL,
     device_label TEXT
+  )`,
+  `CREATE TABLE IF NOT EXISTS posts (
+    id TEXT PRIMARY KEY,
+    author_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    created_at TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS post_marks (
+    post_id TEXT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    mark_type TEXT NOT NULL CHECK (mark_type IN ('shitpost','spark','gonna_implement')),
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (post_id, user_id, mark_type)
   )`,
 ];
 

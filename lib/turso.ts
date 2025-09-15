@@ -166,6 +166,19 @@ export async function migrate() {
       expires_at TEXT NOT NULL,
       device_label TEXT
     )`,
+    `CREATE TABLE IF NOT EXISTS posts (
+      id TEXT PRIMARY KEY,
+      author_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      content TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS post_marks (
+      post_id TEXT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      mark_type TEXT NOT NULL CHECK (mark_type IN ('shitpost','spark','gonna_implement')),
+      created_at TEXT NOT NULL,
+      PRIMARY KEY (post_id, user_id, mark_type)
+    )`,
   ];
   for (const sql of stmts) {
     await exec(sql);

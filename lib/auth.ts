@@ -133,3 +133,8 @@ export async function currentSession(): Promise<Session | null> {
   memorySession = session;
   return session;
 }
+
+export async function getCurrentUserId(): Promise<string | null> {
+  const s = await currentSession();
+  return s?.userId ?? null;
+}
