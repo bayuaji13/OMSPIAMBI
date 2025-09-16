@@ -25,12 +25,12 @@ export function useItems() {
     setLoading(true);
     const uid = await getCurrentUserId();
     setUserId(uid);
-    // Feed with counts
     const feed: any = await exec(
       `SELECT p.id, p.content, p.created_at, p.author_id, u.username,
               COALESCE(SUM(CASE WHEN m.mark_type='shitpost' THEN 1 ELSE 0 END), 0) AS shitpost_count,
               COALESCE(SUM(CASE WHEN m.mark_type='spark' THEN 1 ELSE 0 END), 0) AS spark_count,
-              COALESCE(SUM(CASE WHEN m.mark_type='gonna_implement' THEN 1 ELSE 0 END), 0) AS gonna_implement_count
+              COALESCE(SUM(CASE WHEN m.mark_type='gonna_implement' THEN 1 ELSE 0 END), 0) AS gonna_implement_count,
+              COALESCE(SUM(CASE WHEN m.mark_type='ignored' THEN 1 ELSE 0 END), 0) AS ignored_count
        FROM posts p
        JOIN users u ON u.id = p.author_id
        LEFT JOIN post_marks m ON m.post_id = p.id
@@ -39,35 +39,41 @@ export function useItems() {
        LIMIT 100;`,
       []
     );
-    const itemsOut: Post[] = (feed?.rows ?? []).map((r: any) => ({
+    const rows = feed?.rows ?? [];
+    const itemsOut: Post[] = rows.map((r: any) => ({
       id: r.id,
       content: r.content,
       createdAt: Date.parse(r.created_at || '') || Date.now(),
       author: r.username,
     }));
-    if (__DEV__) console.log('[repo] feed rows', feed?.rows?.length ?? 0);
-    setItems(itemsOut);
+    if (__DEV__) console.log('[repo] feed rows', rows.length ?? 0);
+
     const cMap: Record<ID, Record<MarkType, number>> = {} as any;
-    for (const r of feed?.rows ?? []) {
+    for (const r of rows) {
       cMap[r.id] = {
         shitpost: Number(r.shitpost_count ?? 0),
         spark: Number(r.spark_count ?? 0),
         gonna_implement: Number(r.gonna_implement_count ?? 0),
+        ignored: Number(r.ignored_count ?? 0),
       };
     }
     setCounts(cMap);
-    // Marks of current user
+
+    let marksOut: Mark[] = [];
     if (uid) {
       const mres: any = await exec(`SELECT post_id, mark_type, created_at FROM post_marks WHERE user_id = ?;`, [uid]);
-      const marksOut: Mark[] = (mres?.rows ?? []).map((r: any) => ({
+      marksOut = (mres?.rows ?? []).map((r: any) => ({
         postId: r.post_id,
         type: r.mark_type,
         createdAt: Date.parse(r.created_at || '') || Date.now(),
       }));
-      setMarks(marksOut);
-    } else {
-      setMarks([]);
     }
+    setMarks(marksOut);
+
+    const hiddenIds = new Set(marksOut.map((m) => m.postId));
+    const visibleItems = itemsOut.filter((item) => !hiddenIds.has(item.id));
+    setItems(visibleItems);
+
     setReady(true);
     setLoading(false);
   }
@@ -91,7 +97,6 @@ export function useItems() {
           `INSERT INTO posts (id, author_id, content, created_at) VALUES (?, ?, ?, ?);`,
           [id, uid, content, now]
         );
-        // Verify write
         const verify: any = await exec(`SELECT id FROM posts WHERE id = ?;`, [id]);
         if (!verify?.rows?.length) {
           throw new Error('Write verification failed: post not found after insert');

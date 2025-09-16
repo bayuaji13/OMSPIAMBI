@@ -8,11 +8,12 @@ export type Post = {
   updatedAt?: number;
 };
 
-export type MarkType = 'shitpost' | 'spark' | 'gonna_implement';
+export type MarkType = 'shitpost' | 'spark' | 'gonna_implement' | 'ignored';
 
 export type Mark = {
   postId: ID;
   type: MarkType;
   createdAt: number;
 };
+
 

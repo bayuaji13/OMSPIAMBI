@@ -53,7 +53,7 @@ const statements = [
   `CREATE TABLE IF NOT EXISTS post_marks (
     post_id TEXT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
     user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    mark_type TEXT NOT NULL CHECK (mark_type IN ('shitpost','spark','gonna_implement')),
+    mark_type TEXT NOT NULL CHECK (mark_type IN ('shitpost','spark','gonna_implement','ignored')),
     created_at TEXT NOT NULL,
     PRIMARY KEY (post_id, user_id, mark_type)
   )`,
@@ -85,3 +85,5 @@ async function exec(sql, params = []) {
     process.exit(1);
   }
 })();
+
+
